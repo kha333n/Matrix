@@ -14,7 +14,7 @@ private:
 	int numRows, numCols;
 	T **elements;
 public:
-	Matrix<T> (int = 0, int = 0); //Default constructor
+	explicit  Matrix<T> (int = 0, int = 0); //Default constructor
 	Matrix<T> (const Matrix<T> &);	//Copy constructor
 	~Matrix<T> ();		//Destructor
 
@@ -30,36 +30,36 @@ public:
 	void output (ostream &os = cout) const;
 	void output (ofstream &os) const;
 
-	//Plus operatpr
+	//Plus operator
 	Matrix<T> operator + (Matrix<T> &m) const;
 	const Matrix<T> & operator += (Matrix<T> &m);
 	Matrix<T> operator + (T d) const;
-	friend Matrix<T> operator+(T, Matrix<T> &);
+	template<class U> friend Matrix<T> operator+(T d, Matrix<T> &);
 
 	//Minus operator
 	Matrix<T> operator - (Matrix<T> &m) const;
 	const Matrix<T> & operator -= (Matrix<T> &m);
 	Matrix<T> operator - (T d) const;
-	friend Matrix<T> operator - (T d, Matrix<T> &m);
+	template<class U>friend Matrix<T> operator - (U d, Matrix<T> &m);
 
 	//Multiplication operator
 	Matrix<T> operator * ( const Matrix<T> & m);
 	Matrix<T> operator * (T d) const;
-	friend Matrix<T> operator * (const T d, const Matrix<T> &m);
+	template<class U>friend Matrix<U> operator * (const U d, const Matrix<U> &m);
 
 	//Division operator
 	Matrix<T> operator / (const T d);
 
 	//Stream insertion operator
-	friend istream & operator >> (istream &os, Matrix<T> &);
-	friend ifstream & operator >> (ifstream &os, Matrix<T> &);
+	template<class U>friend istream & operator >> (istream &os, Matrix<T> &);
+	template<class U>friend ifstream & operator >> (ifstream &os, Matrix<T> &);
 
 	//Stream Extraction operator
-	friend ostream & operator << (ostream &is, Matrix<T> &);
-	friend  ofstream & operator << (ofstream &is, Matrix<T> &);
+	template<class U>friend ostream & operator << (ostream &is, Matrix<T> &);
+	template<class U>friend  ofstream & operator << (ofstream &is, Matrix<T> &);
 
 	//Assignment operator
-	const Matrix<T> & operator = (const Matrix<T> &m);
+	const Matrix<T> & operator = (const Matrix<T> &m);  // NOLINT
 
 	//Transpose
 	const Matrix<T> & transpose (void);
@@ -291,6 +291,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T>& m)
 	return temp;
 }
 
+
 template <class T>
 Matrix<T> Matrix<T>::operator*(T d) const
 {
@@ -311,7 +312,9 @@ Matrix<T> Matrix<T>::operator/(const T d)
 	if (d != 0)
 	{
 	Matrix<T> temp (*this);
+	// ReSharper disable CppUnreachableCode
 	for (int i = 0; i<numRows; i++)
+		// ReSharper restore CppUnreachableCode
 	{
 		for (int j = 0; j<numCols; j++)
 		{
@@ -323,8 +326,8 @@ Matrix<T> Matrix<T>::operator/(const T d)
 	return (*this);
 }
 
-template <class T>
-const Matrix<T>& Matrix<T>::operator=(const Matrix<T>& m)
+template <class T>  // NOLINT
+const Matrix<T>&Matrix<T>::operator=(const Matrix<T>& m)
 {
 	if ( &m != this)
 	{
@@ -345,10 +348,23 @@ const Matrix<T>& Matrix<T>::operator=(const Matrix<T>& m)
 					elements[i][j] = m.elements[i][j];
 				}
 			}
+			return *this;
 		}
-		return *this;
+		else
+		{
+			for (int i = 0; i<numRows; i++)
+			{
+				for (int j = 0; j<numCols; j++)
+				{
+					elements[i][j] = m.elements[i][j];
+				}
+			}
+			return *this;
+		}
+		
 	}
 	// TODO: insert return statement here
+	return *this;
 }
 
 template <class T>
@@ -419,7 +435,7 @@ Matrix<T> operator*(const T d, const Matrix<T> &m)
 	{
 		for (int j = 0; j<temp.numCols; j++)
 		{
-			temp.elements[i][j] *= d;
+			temp.elements[i][j] = temp.elements[i][j] * d;
 		}
 	}
 	return temp;
@@ -457,16 +473,26 @@ ofstream& operator<<(ofstream &os, Matrix<T> &m)
 	// TODO: insert return statement here
 }
 
-int main()
+int main()  // NOLINT(bugprone-exception-escape)
 {
-	Matrix<int> a(3,3), b(3,3) ,c(3,3);
+	Matrix<int> a(3,3),b(2,7);
 	cin >> a;
-	a.input();
-	b.input();
-	system("pause");
-	a.output();
-	c = a+b;
-	c.output();
+	cout << a;
+	b = a;
+	cout << b;
+	b.transpose();
+	cout << b;
+	
+	Matrix<int> c(3,3),d;
+	cin >> c;
+	d = a + c;
+	cout << d;
+	
+	c = c * 12;
+	
+	cout << c;
+	
+	return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
