@@ -14,7 +14,7 @@ private:
 	int numRows, numCols;
 	T **elements;
 public:
-	explicit  Matrix<T> (int = 0, int = 0); //Default constructor
+	Matrix<T> (int = 0, int = 0); //Default constructor
 	Matrix<T> (const Matrix<T> &);	//Copy constructor
 	~Matrix<T> ();		//Destructor
 
